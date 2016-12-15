@@ -18,9 +18,7 @@ public class MainActivity extends AppCompatActivity {
     Handler handler = new Handler();
     Handler flash = new Handler();
     long timeInMilliseconds = 0L;
-    long timeSwapBuff = 0L;
-    long updatedtime = 0L;
-    long initialTime = 0L;
+    long initialTime;
     int secs = 0;
     int mins = 0;
     int milliseconds = 0;
@@ -32,11 +30,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         buttonStart = (Button) findViewById(R.id.start);
         time = (TextView) findViewById(R.id.timer);
-        initialTime = SystemClock.uptimeMillis();
 
         buttonStart.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                initialTime = SystemClock.uptimeMillis();
                 buttonStart.setEnabled(false);
                 handler.postDelayed(updateTimer, 0);
             }
@@ -46,11 +44,10 @@ public class MainActivity extends AppCompatActivity {
     public Runnable updateTimer = new Runnable() {
         public void run() {
             timeInMilliseconds = SystemClock.uptimeMillis() - initialTime;
-            updatedtime = timeSwapBuff + timeInMilliseconds;
-            secs = (int)(updatedtime / 1000);
+            secs = (int)(timeInMilliseconds / 1000);
             mins = secs / 60;
             secs = secs % 60;
-            milliseconds = (int)(updatedtime % 1000);
+            milliseconds = (int)(timeInMilliseconds % 1000);
 
             time.setText(""
                     + mins

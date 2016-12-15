@@ -64,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
                 playAudio();
                 flashBackground();
             }
+
+            if (mins == 60) {
+                handler.removeCallbacks(updateTimer);
+            }
         }
     };
 

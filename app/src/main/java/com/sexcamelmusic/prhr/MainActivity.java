@@ -14,14 +14,12 @@ import android.os.SystemClock;
 public class MainActivity extends AppCompatActivity {
     Button buttonStart;
     TextView time;
-    View mainView;
     Handler handler = new Handler();
     Handler flash = new Handler();
     long timeInMilliseconds = 0L;
     long initialTime;
     int secs = 0;
     int mins = 0;
-    int milliseconds = 0;
     public MediaPlayer mp;
 
     @Override
@@ -47,15 +45,8 @@ public class MainActivity extends AppCompatActivity {
             secs = (int)(timeInMilliseconds / 1000);
             mins = secs / 60;
             secs = secs % 60;
-            milliseconds = (int)(timeInMilliseconds % 1000);
 
-            time.setText(""
-                    + mins
-                    + ":"
-                    + String.format("%02d", secs)
-                    + ":"
-                    + String.format("%03d", milliseconds)
-            );
+            time.setText("" + mins + ":" + String.format("%02d", secs));
 
             handler.postDelayed(this, 0);
 

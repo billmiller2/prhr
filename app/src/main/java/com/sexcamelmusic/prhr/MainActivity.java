@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void playAudio() {
         if (mp == null) {
-            mp = MediaPlayer.create(this, R.raw.speech);
+            mp = MediaPlayer.create(this, R.raw.prhr);
         }
         mp.start();
     }

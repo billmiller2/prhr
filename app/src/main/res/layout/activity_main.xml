@@ -29,4 +29,10 @@
         android:text="@string/start"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
+    <Button
+        android:id="@+id/settings"
+        android:layout_width="105dp"
+        android:layout_height="55dp"
+        android:layout_alignParentRight="true"
+        android:text="@string/settings" />
 </RelativeLayout>

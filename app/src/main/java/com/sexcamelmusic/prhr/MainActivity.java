@@ -1,7 +1,9 @@
 package com.sexcamelmusic.prhr;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.media.MediaPlayer;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +15,7 @@ import android.os.SystemClock;
 
 public class MainActivity extends AppCompatActivity {
     Button buttonStart;
+    Button buttonSettings;
     TextView time;
     Handler handler = new Handler();
     Handler flash = new Handler();
@@ -27,7 +30,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         buttonStart = (Button) findViewById(R.id.start);
+        buttonSettings = (Button) findViewById(R.id.settings);
         time = (TextView) findViewById(R.id.timer);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         buttonStart.setOnClickListener(new OnClickListener() {
             @Override
@@ -35,6 +40,14 @@ public class MainActivity extends AppCompatActivity {
                 initialTime = SystemClock.uptimeMillis();
                 buttonStart.setEnabled(false);
                 handler.postDelayed(updateTimer, 0);
+            }
+        });
+
+        buttonSettings.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
             }
         });
     }

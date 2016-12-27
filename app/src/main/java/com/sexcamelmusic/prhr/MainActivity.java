@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
                 time.setText("Power Hour");
                 playAudio();
                 flashBackground();
+            } else if (secs % 60 == 1) {
+                resetBackground();
             }
 
             if (mins == Integer.parseInt(gameTime)) {
@@ -89,15 +91,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void flashBackground() {
         final View mainView = findViewById(R.id.activity_main);
-
         mainView.setBackgroundColor(Color.parseColor("#ffccff"));
+    }
 
-        flash.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mainView.setBackgroundColor(Color.parseColor("#ffffff"));
-            }
-        }, 500);
+    private void resetBackground() {
+        final View mainView = findViewById(R.id.activity_main);
+        mainView.setBackgroundColor(Color.parseColor("#ffffff"));
     }
 
     private String checkPreferenceValues()

@@ -33,6 +33,7 @@
         android:id="@+id/settings"
         android:layout_width="105dp"
         android:layout_height="55dp"
+        android:text="@string/settings"
         android:layout_alignParentRight="true"
-        android:text="@string/settings" />
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>

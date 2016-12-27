@@ -1,6 +1,7 @@
 package com.sexcamelmusic.prhr;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.preference.PreferenceManager;
@@ -24,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     int secs = 0;
     int mins = 0;
     public MediaPlayer mp;
+    String gameTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 initialTime = SystemClock.uptimeMillis();
                 buttonStart.setEnabled(false);
+                buttonSettings.setEnabled(false);
+                gameTime = checkPreferenceValues();
+
                 handler.postDelayed(updateTimer, 0);
             }
         });
@@ -69,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 flashBackground();
             }
 
-            if (mins == 60) {
+            if (mins == Integer.parseInt(gameTime)) {
                 handler.removeCallbacks(updateTimer);
             }
         }
@@ -93,5 +98,14 @@ public class MainActivity extends AppCompatActivity {
                 mainView.setBackgroundColor(Color.parseColor("#ffffff"));
             }
         }, 500);
+    }
+
+    private String checkPreferenceValues()
+    {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
+        String time = prefs.getString("chooseTime", "60");
+
+        return time;
     }
 }

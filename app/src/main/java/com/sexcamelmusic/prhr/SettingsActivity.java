@@ -16,7 +16,7 @@ public class SettingsActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
 
-        checkValues();
+        //checkValues();
     }
 
     public static class SettingsFragment extends PreferenceFragment
@@ -27,12 +27,5 @@ public class SettingsActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences);
         }
-    }
-
-    private void checkValues()
-    {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-
-        String time = prefs.getString("chooseTime", "60");
     }
 }

@@ -1,7 +1,10 @@
 package com.sexcamelmusic.prhr;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +16,7 @@ import android.os.SystemClock;
 
 public class MainActivity extends AppCompatActivity {
     Button buttonStart;
+    Button buttonSettings;
     TextView time;
     Handler handler = new Handler();
     Handler flash = new Handler();
@@ -21,20 +25,34 @@ public class MainActivity extends AppCompatActivity {
     int secs = 0;
     int mins = 0;
     public MediaPlayer mp;
+    String gameTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         buttonStart = (Button) findViewById(R.id.start);
+        buttonSettings = (Button) findViewById(R.id.settings);
         time = (TextView) findViewById(R.id.timer);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         buttonStart.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 initialTime = SystemClock.uptimeMillis();
                 buttonStart.setEnabled(false);
+                buttonSettings.setEnabled(false);
+                gameTime = checkPreferenceValues();
+
                 handler.postDelayed(updateTimer, 0);
+            }
+        });
+
+        buttonSettings.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
             }
         });
     }
@@ -56,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 flashBackground();
             }
 
-            if (mins == 60) {
+            if (mins == Integer.parseInt(gameTime)) {
                 handler.removeCallbacks(updateTimer);
             }
         }
@@ -80,5 +98,14 @@ public class MainActivity extends AppCompatActivity {
                 mainView.setBackgroundColor(Color.parseColor("#ffffff"));
             }
         }, 500);
+    }
+
+    private String checkPreferenceValues()
+    {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
+        String time = prefs.getString("chooseTime", "60");
+
+        return time;
     }
 }

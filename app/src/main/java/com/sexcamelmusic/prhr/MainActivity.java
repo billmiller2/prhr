@@ -14,6 +14,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.os.SystemClock;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
+
 public class MainActivity extends AppCompatActivity {
     Button buttonStart;
     Button buttonSettings;
@@ -23,8 +28,14 @@ public class MainActivity extends AppCompatActivity {
     long initialTime;
     int secs = 0;
     int mins = 0;
+    int doubleShot;
+    int liquorShot;
+    int finishDrink;
+    int eventFrequency;
     public MediaPlayer mp;
-    String gameTime;
+    int gameTime;
+    int events;
+    int[] unavailableNumbers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +52,11 @@ public class MainActivity extends AppCompatActivity {
                 initialTime = SystemClock.uptimeMillis();
                 buttonStart.setEnabled(false);
                 buttonSettings.setEnabled(false);
-                gameTime = checkPreferenceValues();
+
+                SharedPreferences prefs = getSharedPreferences();
+                gameTime = getGameTime(prefs);
+                events = getEvents(prefs);
+                calculateEvents(events, gameTime);
 
                 handler.postDelayed(updateTimer, 0);
             }
@@ -75,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 resetBackground();
             }
 
-            if (mins == Integer.parseInt(gameTime)) {
+            if (mins == gameTime) {
                 handler.removeCallbacks(updateTimer);
             }
         }
@@ -98,12 +113,67 @@ public class MainActivity extends AppCompatActivity {
         mainView.setBackgroundColor(Color.parseColor("#ffffff"));
     }
 
-    private String checkPreferenceValues()
-    {
+    private SharedPreferences getSharedPreferences() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
-        String time = prefs.getString("chooseTime", "60");
+        return prefs;
+    }
 
-        return time;
+    private int getGameTime(SharedPreferences prefs) {
+        String time = prefs.getString("chooseTime", "60");
+        int intTime = Integer.parseInt(time);
+
+        return intTime;
+    }
+
+    private int getEvents(SharedPreferences prefs) {
+        String events = prefs.getString("chooseEvents", "0");
+        int intEvents = Integer.parseInt(events);
+
+        return intEvents;
+    }
+
+    private void calculateEvents(int events, int time) {
+        eventFrequency = calculateEventFrequency(events, time);
+
+        setEvents(eventFrequency);
+    }
+
+    private void setEvents(int frequency) {
+        int randomInt;
+
+        while (frequency > 0) {
+            randomInt = ThreadLocalRandom.current().nextInt(0, (gameTime + 1));
+
+            if (useList(unavailableNumbers, randomInt)) {
+                continue;
+            }
+
+            frequency--;
+        }
+    }
+
+    public static boolean useList(int[] array, int value) {
+        return Arrays.asList(array).contains(array, value);
+    }
+
+    private int calculateEventFrequency(int events, int time) {
+        int frequency = 0;
+
+        switch (events) {
+            case 0:
+                break;
+            case 1:
+                frequency = (time / 20);
+                break;
+            case 2:
+                frequency = (time / 10);
+                break;
+            case 3:
+                frequency = (time / 7);
+                break;
+        }
+
+        return frequency;
     }
 }

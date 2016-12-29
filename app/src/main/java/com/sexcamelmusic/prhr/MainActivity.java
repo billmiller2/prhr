@@ -13,11 +13,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.os.SystemClock;
-
-import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.IntStream;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
     Button buttonStart;
@@ -36,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     int gameTime;
     int events;
     int[] unavailableNumbers;
+    int[] eventTimes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +80,11 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(this, 0);
 
             if (secs % 60 == 0) {
-                time.setText("Power Hour");
+                if (containsValue(eventTimes, mins)) {
+                    time.setText("Liquor Shot");
+                } else {
+                    time.setText("Power Hour");
+                }
                 playAudio();
                 flashBackground();
             } else if (secs % 60 == 1) {
@@ -140,21 +141,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setEvents(int frequency) {
+        Random random = new Random();
         int randomInt;
+        int index = 0;
 
         while (frequency > 0) {
-            randomInt = ThreadLocalRandom.current().nextInt(0, (gameTime + 1));
-
-            if (useList(unavailableNumbers, randomInt)) {
+            randomInt = random.nextInt(gameTime + 1);
+            if (containsValue(unavailableNumbers, randomInt)) {
                 continue;
             }
 
+            eventTimes[index] = randomInt;
+            index++;
             frequency--;
         }
     }
 
-    public static boolean useList(int[] array, int value) {
-        return Arrays.asList(array).contains(array, value);
+    public static boolean containsValue(int[] array, int value) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == value) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int calculateEventFrequency(int events, int time) {

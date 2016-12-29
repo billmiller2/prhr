@@ -9,4 +9,18 @@
         <item>60</item>
         <item>100</item>
     </string-array>
+
+    <string-array name="chooseEvent">
+        <item>off</item>
+        <item>rare</item>
+        <item>occasional</item>
+        <item>often</item>
+    </string-array>
+
+    <string-array name="chooseEventValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
 </resources>

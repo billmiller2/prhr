@@ -19,7 +19,6 @@ public class MainActivity extends AppCompatActivity {
     Button buttonSettings;
     TextView time;
     Handler handler = new Handler();
-    Handler flash = new Handler();
     long timeInMilliseconds = 0L;
     long initialTime;
     int secs = 0;

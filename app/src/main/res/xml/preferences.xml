@@ -12,6 +12,6 @@
         android:summary=""
         android:key="chooseEvent"
         android:defaultValue="0"
-        android:entries="@array/chooseTime"
+        android:entries="@array/chooseEvent"
         android:entryValues="@array/chooseEventValues" />
 </PreferenceScreen>

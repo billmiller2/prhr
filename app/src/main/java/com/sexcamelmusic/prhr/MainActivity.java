@@ -28,11 +28,12 @@ public class MainActivity extends AppCompatActivity {
     int liquorShot;
     int finishDrink;
     int eventFrequency;
-    public MediaPlayer mp;
+    public MediaPlayer liquorMp;
+    public MediaPlayer prhrMp;
     int gameTime;
     int events;
-    int[] unavailableNumbers;
-    int[] eventTimes;
+    int[] unavailableNumbers = new int[100];
+    int[] eventTimes = new int[100];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,10 +83,12 @@ public class MainActivity extends AppCompatActivity {
             if (secs % 60 == 0) {
                 if (containsValue(eventTimes, mins)) {
                     time.setText("Liquor Shot");
+                    playLiquorShot();
                 } else {
                     time.setText("Power Hour");
+                    playPrhr();
                 }
-                playAudio();
+
                 flashBackground();
             } else if (secs % 60 == 1) {
                 resetBackground();
@@ -97,11 +100,18 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void playAudio() {
-        if (mp == null) {
-            mp = MediaPlayer.create(this, R.raw.prhr);
+    private void playPrhr() {
+        if (prhrMp == null) {
+            prhrMp = MediaPlayer.create(this, R.raw.prhr);
         }
-        mp.start();
+        prhrMp.start();
+    }
+
+    private void playLiquorShot() {
+        if (liquorMp == null) {
+            liquorMp = MediaPlayer.create(this, R.raw.liquorshot);
+        }
+        liquorMp.start();
     }
 
     private void flashBackground() {
@@ -128,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int getEvents(SharedPreferences prefs) {
-        String events = prefs.getString("chooseEvents", "0");
+        String events = prefs.getString("chooseEvent", "0");
         int intEvents = Integer.parseInt(events);
 
         return intEvents;
@@ -151,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 continue;
             }
 
+            unavailableNumbers[index] = randomInt;
             eventTimes[index] = randomInt;
             index++;
             frequency--;

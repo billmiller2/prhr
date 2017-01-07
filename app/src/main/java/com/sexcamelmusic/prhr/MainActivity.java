@@ -24,12 +24,24 @@ public class MainActivity extends AppCompatActivity {
     long initialTime;
     int secs = 0;
     int mins = 0;
-    int doubleShot;
-    int liquorShot;
-    int finishDrink;
+
+    final static int doubleShot = 0;
+    final static int liquorShot = 1;
+    final static int finishDrink = 2;
+
+    final static  String doubleShotText = "Double Shot";
+    final static  String liquorShotText = "Liquor Shot";
+    final static  String finishDrinkText = "Finish Drink";
+
+    boolean isEventTriggered = false;
+    String text = null;
+    int event = 0;
+
     int eventFrequency;
     public MediaPlayer liquorMp;
     public MediaPlayer prhrMp;
+    public MediaPlayer finishMp;
+    public MediaPlayer doubleMp;
     int gameTime;
     int events;
     int[] unavailableNumbers = new int[100];
@@ -82,8 +94,14 @@ public class MainActivity extends AppCompatActivity {
 
             if (secs % 60 == 0) {
                 if (containsValue(eventTimes, mins)) {
-                    time.setText("Liquor Shot");
-                    playLiquorShot();
+                    if (!isEventTriggered) {
+                        event = getEvent();
+                        text = getEventText(event);
+                    }
+                    time.setText(text);
+                    playAudio(event);
+
+                    isEventTriggered = true;
                 } else {
                     time.setText("Power Hour");
                     playPrhr();
@@ -92,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 flashBackground();
             } else if (secs % 60 == 1) {
                 resetBackground();
+                isEventTriggered = false;
             }
 
             if (mins == gameTime) {
@@ -100,11 +119,39 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private void playAudio(int event) {
+        switch (event) {
+            case doubleShot:
+                playDoubleShot();
+                break;
+            case liquorShot:
+                playLiquorShot();
+                break;
+            case finishDrink:
+                playFinishDrink();
+                break;
+        }
+    }
+
     private void playPrhr() {
         if (prhrMp == null) {
             prhrMp = MediaPlayer.create(this, R.raw.prhr);
         }
         prhrMp.start();
+    }
+
+    private void playDoubleShot() {
+        if (doubleMp == null) {
+            doubleMp = MediaPlayer.create(this, R.raw.doubleshot);
+        }
+        doubleMp.start();
+    }
+
+    private void playFinishDrink() {
+        if (finishMp == null) {
+            finishMp = MediaPlayer.create(this, R.raw.finishdrink);
+        }
+        finishMp.start();
     }
 
     private void playLiquorShot() {
@@ -135,6 +182,24 @@ public class MainActivity extends AppCompatActivity {
         int intTime = Integer.parseInt(time);
 
         return intTime;
+    }
+
+    private int getEvent() {
+        Random random = new Random();
+        return random.nextInt(3); // only 3 events for now, prob find a better way to do this
+    }
+
+    private String getEventText(int event) {
+        switch (event) {
+            case doubleShot:
+                return doubleShotText;
+            case liquorShot:
+                return liquorShotText;
+            case finishDrink:
+                return finishDrinkText;
+            default:
+                return null;
+        }
     }
 
     private int getEvents(SharedPreferences prefs) {

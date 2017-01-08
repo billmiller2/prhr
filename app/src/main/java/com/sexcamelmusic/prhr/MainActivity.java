@@ -13,6 +13,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.os.SystemClock;
+
+import java.util.ArrayList;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     int gameTime;
     int events;
     int[] unavailableNumbers = new int[100];
+    ArrayList<Integer> unavailableNums = new ArrayList<Integer>();
     int[] eventTimes = new int[100];
 
     @Override
@@ -93,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(this, 0);
 
             if (secs % 60 == 0) {
-                if (containsValue(eventTimes, mins)) {
+                if (containsValue(eventTimes, mins) && mins != 0) {
                     if (!isEventTriggered) {
                         event = getEvent();
                         text = getEventText(event);
@@ -218,7 +221,8 @@ public class MainActivity extends AppCompatActivity {
     private void setEvents(int frequency) {
         Random random = new Random();
         int randomInt;
-        int index = 0;
+        int eventIndex = 0;
+        int unavailableIndex = 0;
 
         while (frequency > 0) {
             randomInt = random.nextInt(gameTime + 1);
@@ -226,10 +230,22 @@ public class MainActivity extends AppCompatActivity {
                 continue;
             }
 
-            unavailableNumbers[index] = randomInt;
-            eventTimes[index] = randomInt;
-            index++;
+            setUnavailableNumbers(randomInt, unavailableIndex);
+            eventTimes[eventIndex] = randomInt;
+            eventIndex++;
+            unavailableIndex+= 5;
             frequency--;
+        }
+    }
+
+    private void setUnavailableNumbers(int randomInt, int index) {
+        int i = -2;
+        for (int newIndex = index - 2; newIndex < index + 3; newIndex++) {
+            if (newIndex >= 0) {
+                unavailableNumbers[newIndex] = randomInt + i;
+                //unavailableNums.add(randomInt + i);
+            }
+            i++;
         }
     }
 

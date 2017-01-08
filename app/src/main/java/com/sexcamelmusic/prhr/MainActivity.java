@@ -14,18 +14,41 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.os.SystemClock;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
     Button buttonStart;
     Button buttonSettings;
     TextView time;
     Handler handler = new Handler();
-    Handler flash = new Handler();
     long timeInMilliseconds = 0L;
     long initialTime;
     int secs = 0;
     int mins = 0;
-    public MediaPlayer mp;
-    String gameTime;
+
+    final static int doubleShot = 0;
+    final static int liquorShot = 1;
+    final static int finishDrink = 2;
+
+    final static  String doubleShotText = "Double Shot";
+    final static  String liquorShotText = "Liquor Shot";
+    final static  String finishDrinkText = "Finish Drink";
+
+    boolean isEventTriggered = false;
+    String text = null;
+    int event = 0;
+
+    int eventFrequency;
+    public MediaPlayer liquorMp;
+    public MediaPlayer prhrMp;
+    public MediaPlayer finishMp;
+    public MediaPlayer doubleMp;
+    int gameTime;
+    int events;
+    int[] unavailableNumbers = new int[100];
+    ArrayList<Integer> unavailableNums = new ArrayList<Integer>();
+    int[] eventTimes = new int[100];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +65,11 @@ public class MainActivity extends AppCompatActivity {
                 initialTime = SystemClock.uptimeMillis();
                 buttonStart.setEnabled(false);
                 buttonSettings.setEnabled(false);
-                gameTime = checkPreferenceValues();
+
+                SharedPreferences prefs = getSharedPreferences();
+                gameTime = getGameTime(prefs);
+                events = getEvents(prefs);
+                calculateEvents(events, gameTime);
 
                 handler.postDelayed(updateTimer, 0);
             }
@@ -69,24 +96,72 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(this, 0);
 
             if (secs % 60 == 0) {
-                time.setText("Power Hour");
-                playAudio();
+                if (containsValue(eventTimes, mins) && mins != 0) {
+                    if (!isEventTriggered) {
+                        event = getEvent();
+                        text = getEventText(event);
+                    }
+                    time.setText(text);
+                    playAudio(event);
+
+                    isEventTriggered = true;
+                } else {
+                    time.setText("Power Hour");
+                    playPrhr();
+                }
+
                 flashBackground();
             } else if (secs % 60 == 1) {
                 resetBackground();
+                isEventTriggered = false;
             }
 
-            if (mins == Integer.parseInt(gameTime)) {
+            if (mins == gameTime) {
                 handler.removeCallbacks(updateTimer);
             }
         }
     };
 
-    private void playAudio() {
-        if (mp == null) {
-            mp = MediaPlayer.create(this, R.raw.prhr);
+    private void playAudio(int event) {
+        switch (event) {
+            case doubleShot:
+                playDoubleShot();
+                break;
+            case liquorShot:
+                playLiquorShot();
+                break;
+            case finishDrink:
+                playFinishDrink();
+                break;
         }
-        mp.start();
+    }
+
+    private void playPrhr() {
+        if (prhrMp == null) {
+            prhrMp = MediaPlayer.create(this, R.raw.prhr);
+        }
+        prhrMp.start();
+    }
+
+    private void playDoubleShot() {
+        if (doubleMp == null) {
+            doubleMp = MediaPlayer.create(this, R.raw.doubleshot);
+        }
+        doubleMp.start();
+    }
+
+    private void playFinishDrink() {
+        if (finishMp == null) {
+            finishMp = MediaPlayer.create(this, R.raw.finishdrink);
+        }
+        finishMp.start();
+    }
+
+    private void playLiquorShot() {
+        if (liquorMp == null) {
+            liquorMp = MediaPlayer.create(this, R.raw.liquorshot);
+        }
+        liquorMp.start();
     }
 
     private void flashBackground() {
@@ -99,12 +174,107 @@ public class MainActivity extends AppCompatActivity {
         mainView.setBackgroundColor(Color.parseColor("#ffffff"));
     }
 
-    private String checkPreferenceValues()
-    {
+    private SharedPreferences getSharedPreferences() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
-        String time = prefs.getString("chooseTime", "60");
+        return prefs;
+    }
 
-        return time;
+    private int getGameTime(SharedPreferences prefs) {
+        String time = prefs.getString("chooseTime", "60");
+        int intTime = Integer.parseInt(time);
+
+        return intTime;
+    }
+
+    private int getEvent() {
+        Random random = new Random();
+        return random.nextInt(3); // only 3 events for now, prob find a better way to do this
+    }
+
+    private String getEventText(int event) {
+        switch (event) {
+            case doubleShot:
+                return doubleShotText;
+            case liquorShot:
+                return liquorShotText;
+            case finishDrink:
+                return finishDrinkText;
+            default:
+                return null;
+        }
+    }
+
+    private int getEvents(SharedPreferences prefs) {
+        String events = prefs.getString("chooseEvent", "0");
+        int intEvents = Integer.parseInt(events);
+
+        return intEvents;
+    }
+
+    private void calculateEvents(int events, int time) {
+        eventFrequency = calculateEventFrequency(events, time);
+
+        setEvents(eventFrequency);
+    }
+
+    private void setEvents(int frequency) {
+        Random random = new Random();
+        int randomInt;
+        int eventIndex = 0;
+        int unavailableIndex = 0;
+
+        while (frequency > 0) {
+            randomInt = random.nextInt(gameTime + 1);
+            if (containsValue(unavailableNumbers, randomInt)) {
+                continue;
+            }
+
+            setUnavailableNumbers(randomInt, unavailableIndex);
+            eventTimes[eventIndex] = randomInt;
+            eventIndex++;
+            unavailableIndex+= 5;
+            frequency--;
+        }
+    }
+
+    private void setUnavailableNumbers(int randomInt, int index) {
+        int i = -2;
+        for (int newIndex = index - 2; newIndex < index + 3; newIndex++) {
+            if (newIndex >= 0) {
+                unavailableNumbers[newIndex] = randomInt + i;
+                //unavailableNums.add(randomInt + i);
+            }
+            i++;
+        }
+    }
+
+    public static boolean containsValue(int[] array, int value) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int calculateEventFrequency(int events, int time) {
+        int frequency = 0;
+
+        switch (events) {
+            case 0:
+                break;
+            case 1:
+                frequency = (time / 20);
+                break;
+            case 2:
+                frequency = (time / 10);
+                break;
+            case 3:
+                frequency = (time / 7);
+                break;
+        }
+
+        return frequency;
     }
 }

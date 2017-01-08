@@ -14,4 +14,11 @@
         android:defaultValue="0"
         android:entries="@array/chooseEvent"
         android:entryValues="@array/chooseEventValues" />
+    <ListPreference
+        android:title="Wine Hour"
+        android:summary=""
+        android:key="wineHr"
+        android:defaultValue="0"
+        android:entries="@array/wineHr"
+        android:entryValues="@array/wineHrValues" />
 </PreferenceScreen>

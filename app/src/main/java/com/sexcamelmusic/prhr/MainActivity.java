@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     long initialTime;
     int secs = 0;
     int mins = 0;
+    int isWineHr = 0;
 
     final static int doubleShot = 0;
     final static int liquorShot = 1;
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 SharedPreferences prefs = getSharedPreferences();
                 gameTime = getGameTime(prefs);
                 events = getEvents(prefs);
+                isWineHr = getWineHr(prefs);
                 calculateEvents(events, gameTime);
 
                 handler.postDelayed(updateTimer, 0);
@@ -95,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
             handler.postDelayed(this, 0);
 
-            if (secs % 60 == 0) {
+            if ((isWineHr == 1 && secs % 60 == 0 && mins % 2 != 0) || (isWineHr == 0 && secs % 60 == 0)) {
                 if (containsValue(eventTimes, mins) && mins != 0) {
                     if (!isEventTriggered) {
                         event = getEvent();
@@ -185,6 +187,13 @@ public class MainActivity extends AppCompatActivity {
         int intTime = Integer.parseInt(time);
 
         return intTime;
+    }
+
+    private int getWineHr(SharedPreferences prefs) {
+        String isWineHr = prefs.getString("wineHr", "0");
+        int isWine = Integer.parseInt(isWineHr);
+
+        return isWine;
     }
 
     private int getEvent() {

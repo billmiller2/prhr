@@ -18,14 +18,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-    Button buttonStart;
-    Button buttonSettings;
     TextView time;
     Handler handler = new Handler();
-    long timeInMilliseconds = 0L;
     long initialTime;
-    int secs = 0;
-    int mins = 0;
     int isWineHr = 0;
 
     final static int doubleShot = 0;
@@ -55,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        buttonStart = (Button) findViewById(R.id.start);
-        buttonSettings = (Button) findViewById(R.id.settings);
+        final Button buttonStart = (Button) findViewById(R.id.start);
+        final Button buttonSettings = (Button) findViewById(R.id.settings);
         time = (TextView) findViewById(R.id.timer);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
@@ -86,11 +81,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public Runnable updateTimer = new Runnable() {
+    private Runnable updateTimer = new Runnable() {
         public void run() {
-            timeInMilliseconds = SystemClock.uptimeMillis() - initialTime;
-            secs = (int)(timeInMilliseconds / 1000);
-            mins = secs / 60;
+            long timeInMilliseconds = SystemClock.uptimeMillis() - initialTime;
+            int secs = (int) (timeInMilliseconds / 1000);
+            int mins = secs / 60;
             secs = secs % 60;
 
             time.setText("" + mins + ":" + String.format("%02d", secs));

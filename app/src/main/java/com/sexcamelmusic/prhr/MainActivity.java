@@ -18,14 +18,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-    Button buttonStart;
-    Button buttonSettings;
     TextView time;
     Handler handler = new Handler();
-    long timeInMilliseconds = 0L;
     long initialTime;
-    int secs = 0;
-    int mins = 0;
     int isWineHr = 0;
 
     final static int doubleShot = 0;
@@ -55,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        buttonStart = (Button) findViewById(R.id.start);
-        buttonSettings = (Button) findViewById(R.id.settings);
+        final Button buttonStart = (Button) findViewById(R.id.start);
+        final Button buttonSettings = (Button) findViewById(R.id.settings);
         time = (TextView) findViewById(R.id.timer);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
@@ -86,11 +81,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public Runnable updateTimer = new Runnable() {
+    private Runnable updateTimer = new Runnable() {
         public void run() {
-            timeInMilliseconds = SystemClock.uptimeMillis() - initialTime;
-            secs = (int)(timeInMilliseconds / 1000);
-            mins = secs / 60;
+            long timeInMilliseconds = SystemClock.uptimeMillis() - initialTime;
+            int secs = (int) (timeInMilliseconds / 1000);
+            int mins = secs / 60;
             secs = secs % 60;
 
             time.setText("" + mins + ":" + String.format("%02d", secs));
@@ -124,6 +119,91 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private int calculateEventFrequency(int events, int time) {
+        int frequency = 0;
+
+        switch (events) {
+            case 0:
+                break;
+            case 1:
+                frequency = (time / 20);
+                break;
+            case 2:
+                frequency = (time / 10);
+                break;
+            case 3:
+                frequency = (time / 7);
+                break;
+        }
+
+        return frequency;
+    }
+
+    private void calculateEvents(int events, int time) {
+        eventFrequency = calculateEventFrequency(events, time);
+
+        setEvents(eventFrequency);
+    }
+
+    public static boolean containsValue(int[] array, int value) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void flashBackground() {
+        final View mainView = findViewById(R.id.activity_main);
+        mainView.setBackgroundColor(Color.parseColor("#ffccff"));
+    }
+
+    private int getEvent() {
+        Random random = new Random();
+        return random.nextInt(3); // only 3 events for now, prob find a better way to do this
+    }
+
+    private int getEvents(SharedPreferences prefs) {
+        String events = prefs.getString("chooseEvent", "0");
+        int intEvents = Integer.parseInt(events);
+
+        return intEvents;
+    }
+
+    private String getEventText(int event) {
+        switch (event) {
+            case doubleShot:
+                return doubleShotText;
+            case liquorShot:
+                return liquorShotText;
+            case finishDrink:
+                return finishDrinkText;
+            default:
+                return null;
+        }
+    }
+
+    private int getGameTime(SharedPreferences prefs) {
+        String time = prefs.getString("chooseTime", "60");
+        int intTime = Integer.parseInt(time);
+
+        return intTime;
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
+        return prefs;
+    }
+
+    private int getWineHr(SharedPreferences prefs) {
+        String isWineHr = prefs.getString("wineHr", "0");
+        int isWine = Integer.parseInt(isWineHr);
+
+        return isWine;
+    }
+
     private void playAudio(int event) {
         switch (event) {
             case doubleShot:
@@ -136,13 +216,6 @@ public class MainActivity extends AppCompatActivity {
                 playFinishDrink();
                 break;
         }
-    }
-
-    private void playPrhr() {
-        if (prhrMp == null) {
-            prhrMp = MediaPlayer.create(this, R.raw.prhr);
-        }
-        prhrMp.start();
     }
 
     private void playDoubleShot() {
@@ -166,65 +239,16 @@ public class MainActivity extends AppCompatActivity {
         liquorMp.start();
     }
 
-    private void flashBackground() {
-        final View mainView = findViewById(R.id.activity_main);
-        mainView.setBackgroundColor(Color.parseColor("#ffccff"));
+    private void playPrhr() {
+        if (prhrMp == null) {
+            prhrMp = MediaPlayer.create(this, R.raw.prhr);
+        }
+        prhrMp.start();
     }
 
     private void resetBackground() {
         final View mainView = findViewById(R.id.activity_main);
         mainView.setBackgroundColor(Color.parseColor("#ffffff"));
-    }
-
-    private SharedPreferences getSharedPreferences() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-
-        return prefs;
-    }
-
-    private int getGameTime(SharedPreferences prefs) {
-        String time = prefs.getString("chooseTime", "60");
-        int intTime = Integer.parseInt(time);
-
-        return intTime;
-    }
-
-    private int getWineHr(SharedPreferences prefs) {
-        String isWineHr = prefs.getString("wineHr", "0");
-        int isWine = Integer.parseInt(isWineHr);
-
-        return isWine;
-    }
-
-    private int getEvent() {
-        Random random = new Random();
-        return random.nextInt(3); // only 3 events for now, prob find a better way to do this
-    }
-
-    private String getEventText(int event) {
-        switch (event) {
-            case doubleShot:
-                return doubleShotText;
-            case liquorShot:
-                return liquorShotText;
-            case finishDrink:
-                return finishDrinkText;
-            default:
-                return null;
-        }
-    }
-
-    private int getEvents(SharedPreferences prefs) {
-        String events = prefs.getString("chooseEvent", "0");
-        int intEvents = Integer.parseInt(events);
-
-        return intEvents;
-    }
-
-    private void calculateEvents(int events, int time) {
-        eventFrequency = calculateEventFrequency(events, time);
-
-        setEvents(eventFrequency);
     }
 
     private void setEvents(int frequency) {
@@ -256,34 +280,5 @@ public class MainActivity extends AppCompatActivity {
             }
             i++;
         }
-    }
-
-    public static boolean containsValue(int[] array, int value) {
-        for (int i = 0; i < array.length; i++) {
-            if (array[i] == value) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private int calculateEventFrequency(int events, int time) {
-        int frequency = 0;
-
-        switch (events) {
-            case 0:
-                break;
-            case 1:
-                frequency = (time / 20);
-                break;
-            case 2:
-                frequency = (time / 10);
-                break;
-            case 3:
-                frequency = (time / 7);
-                break;
-        }
-
-        return frequency;
     }
 }

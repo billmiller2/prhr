@@ -42,9 +42,8 @@ public class MainActivity extends AppCompatActivity {
     public MediaPlayer doubleMp;
     int gameTime;
     int events;
-    int[] unavailableNumbers = new int[100];
-    ArrayList<Integer> unavailableNums = new ArrayList<Integer>();
-    int[] eventTimes = new int[100];
+    ArrayList<Integer> unavailableNumbers = new ArrayList<Integer>();
+    ArrayList<Integer>eventTimes = new ArrayList<Integer>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
             handler.postDelayed(this, 0);
 
             if ((isWineHr == 1 && secs % 60 == 0 && mins % 2 != 0) || (isWineHr == 0 && secs % 60 == 0)) {
-                if (containsValue(eventTimes, mins) && mins != 0) {
+                if (eventTimes.contains(mins)) {
                     if (!isEventTriggered) {
                         event = getEvent();
                         text = getEventText(event);
@@ -143,15 +142,6 @@ public class MainActivity extends AppCompatActivity {
         eventFrequency = calculateEventFrequency(events, time);
 
         setEvents(eventFrequency);
-    }
-
-    public static boolean containsValue(int[] array, int value) {
-        for (int i = 0; i < array.length; i++) {
-            if (array[i] == value) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void flashBackground() {
@@ -251,34 +241,34 @@ public class MainActivity extends AppCompatActivity {
         mainView.setBackgroundColor(Color.parseColor("#ffffff"));
     }
 
+    /**
+     * Set the times that events will occur
+     * @param frequency  how many events will occur
+     */
     private void setEvents(int frequency) {
         Random random = new Random();
         int randomInt;
-        int eventIndex = 0;
-        int unavailableIndex = 0;
 
         while (frequency > 0) {
             randomInt = random.nextInt(gameTime + 1);
-            if (containsValue(unavailableNumbers, randomInt)) {
+            if (unavailableNumbers.contains(randomInt)) {
                 continue;
             }
 
-            setUnavailableNumbers(randomInt, unavailableIndex);
-            eventTimes[eventIndex] = randomInt;
-            eventIndex++;
-            unavailableIndex+= 5;
+            setUnavailableNumbers(randomInt);
+            eventTimes.add(randomInt);
             frequency--;
         }
     }
 
-    private void setUnavailableNumbers(int randomInt, int index) {
-        int i = -2;
-        for (int newIndex = index - 2; newIndex < index + 3; newIndex++) {
-            if (newIndex >= 0) {
-                unavailableNumbers[newIndex] = randomInt + i;
-                //unavailableNums.add(randomInt + i);
-            }
-            i++;
+    /**
+     * Set unavailable numbers for events
+     * @param eventTime  the randomly generated event time
+     */
+    private void setUnavailableNumbers(int eventTime) {
+        // set a buffer of three numbers before and after the event
+        for (int j = 0; j < 5; j++) {
+            unavailableNumbers.add(eventTime - 3 + j);
         }
     }
 }

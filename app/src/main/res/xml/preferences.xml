@@ -2,21 +2,21 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <ListPreference
         android:title="Game Mode"
-        android:summary=""
+        android:summary="%s"
         android:key="chooseTime"
         android:defaultValue="60"
         android:entries="@array/chooseTime"
         android:entryValues="@array/chooseTimeValues" />
     <ListPreference
         android:title="Special Events"
-        android:summary=""
+        android:summary="%s"
         android:key="chooseEvent"
         android:defaultValue="0"
         android:entries="@array/chooseEvent"
         android:entryValues="@array/chooseEventValues" />
     <ListPreference
         android:title="Wine Hour"
-        android:summary=""
+        android:summary="%s"
         android:key="wineHr"
         android:defaultValue="0"
         android:entries="@array/wineHr"

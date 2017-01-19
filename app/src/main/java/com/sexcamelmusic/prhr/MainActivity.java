@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     final static  String finishDrinkText = "Finish Drink";
 
     boolean isEventTriggered = false;
+    boolean isLiquorShotValid = true;
     String text = null;
     int event = 0;
 
@@ -149,9 +150,22 @@ public class MainActivity extends AppCompatActivity {
         mainView.setBackgroundColor(Color.parseColor("#ffccff"));
     }
 
+    /**
+     * Get a random special event
+     * Liquor shots are capped at one per game
+     * @return int
+     */
     private int getEvent() {
         Random random = new Random();
-        return random.nextInt(3); // only 3 events for now, prob find a better way to do this
+        int event = random.nextInt(3); // only 3 events for now, prob find a better way to do this
+
+        if (event == liquorShot) {
+            if (!isLiquorShotValid) {
+                event = getEvent();
+            }
+            isLiquorShotValid = false;
+        }
+        return event;
     }
 
     private int getEvents(SharedPreferences prefs) {

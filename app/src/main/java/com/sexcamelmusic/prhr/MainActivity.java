@@ -159,9 +159,6 @@ public class MainActivity extends AppCompatActivity {
         Random random = new Random();
         int event = random.nextInt(3); // only 3 events for now, prob find a better way to do this
 
-        if (event == liquorShot && !isLiquorShotValid) {
-            event = getEvent();
-        }
         if (event == liquorShot) {
             if (!isLiquorShotValid) {
                 event = getEvent();

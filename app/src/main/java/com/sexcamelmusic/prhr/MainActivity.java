@@ -88,7 +88,9 @@ public class MainActivity extends AppCompatActivity {
             int mins = secs / 60;
             secs = secs % 60;
 
-            time.setText("" + mins + ":" + String.format("%02d", secs));
+            if (!isEventTriggered) {
+                time.setText("" + mins + ":" + String.format("%02d", secs));
+            }
 
             handler.postDelayed(this, 0);
 
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 flashBackground();
-            } else if (secs % 60 == 1) {
+            } else if (secs % 60 == 5 || (!isEventTriggered && secs % 60 == 1)) {
                 resetBackground();
                 isEventTriggered = false;
             }

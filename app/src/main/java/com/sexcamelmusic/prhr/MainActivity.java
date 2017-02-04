@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     int addedTime;
     int isWineHr = 0;
     boolean startUp = true;
+    int secs;
 
     final static int doubleShot = 0;
     final static int liquorShot = 1;
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
                     handler.postDelayed(updateTimer, 0);
                     startUp = false;
-                } else {
+                } else if ((60 - secs) > 5) {
                     addedTime += 5;
                 }
 
@@ -92,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     private Runnable updateTimer = new Runnable() {
         public void run() {
             long timeInMilliseconds = SystemClock.uptimeMillis() - initialTime;
-            int secs = (int) (timeInMilliseconds / 1000) + addedTime;
+            secs = (int) (timeInMilliseconds / 1000) + addedTime;
             int mins = secs / 60;
             secs = secs % 60;
 

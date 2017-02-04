@@ -21,7 +21,9 @@ public class MainActivity extends AppCompatActivity {
     TextView time;
     Handler handler = new Handler();
     long initialTime;
+    int addedTime;
     int isWineHr = 0;
+    boolean startUp = true;
 
     final static int doubleShot = 0;
     final static int liquorShot = 1;
@@ -50,25 +52,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final Button buttonStart = (Button) findViewById(R.id.start);
+        final Button buttonStartPause = (Button) findViewById(R.id.start);
         final Button buttonSettings = (Button) findViewById(R.id.settings);
         time = (TextView) findViewById(R.id.timer);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
-        buttonStart.setOnClickListener(new OnClickListener() {
+        buttonStartPause.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                initialTime = SystemClock.uptimeMillis();
-                buttonStart.setEnabled(false);
-                buttonSettings.setEnabled(false);
+                if (startUp) {
+                    initialTime = SystemClock.uptimeMillis();
+                    buttonStartPause.setText("Pause");
+                    buttonSettings.setEnabled(false);
 
-                SharedPreferences prefs = getSharedPreferences();
-                gameTime = getGameTime(prefs);
-                events = getEvents(prefs);
-                isWineHr = getWineHr(prefs);
-                calculateEvents(events, gameTime);
+                    SharedPreferences prefs = getSharedPreferences();
+                    gameTime = getGameTime(prefs);
+                    events = getEvents(prefs);
+                    isWineHr = getWineHr(prefs);
+                    calculateEvents(events, gameTime);
 
-                handler.postDelayed(updateTimer, 0);
+                    handler.postDelayed(updateTimer, 0);
+                    startUp = false;
+                } else {
+                    addedTime += 5;
+                }
+
             }
         });
 
@@ -84,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private Runnable updateTimer = new Runnable() {
         public void run() {
             long timeInMilliseconds = SystemClock.uptimeMillis() - initialTime;
-            int secs = (int) (timeInMilliseconds / 1000);
+            int secs = (int) (timeInMilliseconds / 1000) + addedTime;
             int mins = secs / 60;
             secs = secs % 60;
 

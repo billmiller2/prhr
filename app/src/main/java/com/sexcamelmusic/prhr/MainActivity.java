@@ -55,13 +55,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         final Button buttonStartPause = (Button) findViewById(R.id.start);
         final Button buttonSettings = (Button) findViewById(R.id.settings);
-        time = (TextView) findViewById(R.id.timer);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         buttonStartPause.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (startUp) {
+                    time = (TextView) findViewById(R.id.timer);
                     initialTime = SystemClock.uptimeMillis();
                     buttonStartPause.setText("Pause");
                     buttonSettings.setEnabled(false);
@@ -77,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
                 } else if ((60 - secs) > 5) {
                     addedTime += 5;
                 }
-
             }
         });
 
@@ -88,6 +87,24 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(settingsIntent);
             }
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("gameTime", gameTime);
+        outState.putLong("initialTime", initialTime);
+        handler.removeCallbacks(updateTimer);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        time = (TextView) findViewById(R.id.timer);
+        gameTime = savedInstanceState.getInt("gameTime");
+        initialTime = savedInstanceState.getLong("initialTime");
+
+        handler.postDelayed(updateTimer, 0);
     }
 
     private Runnable updateTimer = new Runnable() {

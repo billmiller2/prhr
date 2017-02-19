@@ -1,6 +1,9 @@
 package com.sexcamelmusic.prhr;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
@@ -17,14 +20,25 @@ import android.os.SystemClock;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static com.sexcamelmusic.prhr.R.id.text;
+
 public class MainActivity extends AppCompatActivity {
     TextView time;
     Handler handler = new Handler();
-    long initialTime;
+
+    String text = null;
+
     int addedTime;
-    int isWineHr = 0;
-    boolean startUp = true;
     int secs;
+    int isWineHr = 0;
+    int events;
+    int gameTime;
+    int event = 0;
+    int eventFrequency;
+
+    boolean startUp = true;
+    boolean isEventTriggered = false;
+    boolean isLiquorShotValid = true;
 
     final static int doubleShot = 0;
     final static int liquorShot = 1;
@@ -34,20 +48,13 @@ public class MainActivity extends AppCompatActivity {
     final static  String liquorShotText = "Liquor Shot";
     final static  String finishDrinkText = "Finish Drink";
 
-    boolean isEventTriggered = false;
-    boolean isLiquorShotValid = true;
-    String text = null;
-    int event = 0;
+    ArrayList<Integer> unavailableNumbers = new ArrayList<Integer>();
+    ArrayList<Integer>eventTimes = new ArrayList<Integer>();
 
-    int eventFrequency;
     public MediaPlayer liquorMp;
     public MediaPlayer prhrMp;
     public MediaPlayer finishMp;
     public MediaPlayer doubleMp;
-    int gameTime;
-    int events;
-    ArrayList<Integer> unavailableNumbers = new ArrayList<Integer>();
-    ArrayList<Integer>eventTimes = new ArrayList<Integer>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,23 +63,24 @@ public class MainActivity extends AppCompatActivity {
         final Button buttonStartPause = (Button) findViewById(R.id.start);
         final Button buttonSettings = (Button) findViewById(R.id.settings);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
 
         buttonStartPause.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (startUp) {
+                    Intent intent = new Intent(view.getContext(), TimerService.class);
+                    startService(intent);
                     time = (TextView) findViewById(R.id.timer);
-                    initialTime = SystemClock.uptimeMillis();
                     buttonStartPause.setText("Pause");
                     buttonSettings.setEnabled(false);
-
                     SharedPreferences prefs = getSharedPreferences();
                     gameTime = getGameTime(prefs);
                     events = getEvents(prefs);
                     isWineHr = getWineHr(prefs);
                     calculateEvents(events, gameTime);
-
                     handler.postDelayed(updateTimer, 0);
+
                     startUp = false;
                 } else if ((60 - secs) > 5) {
                     addedTime += 5;
@@ -89,30 +97,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("gameTime", gameTime);
-        outState.putLong("initialTime", initialTime);
-        handler.removeCallbacks(updateTimer);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        time = (TextView) findViewById(R.id.timer);
-        gameTime = savedInstanceState.getInt("gameTime");
-        initialTime = savedInstanceState.getLong("initialTime");
-
-        handler.postDelayed(updateTimer, 0);
-    }
-
     private Runnable updateTimer = new Runnable() {
         public void run() {
-            long timeInMilliseconds = SystemClock.uptimeMillis() - initialTime;
-            secs = (int) (timeInMilliseconds / 1000) + addedTime;
-            int mins = secs / 60;
-            secs = secs % 60;
+            int mins = (secs + addedTime) / 60;
 
             if (!isEventTriggered) {
                 time.setText("" + mins + ":" + String.format("%02d", secs));
@@ -144,6 +131,13 @@ public class MainActivity extends AppCompatActivity {
             if (mins == gameTime) {
                 handler.removeCallbacks(updateTimer);
             }
+        }
+    };
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            secs = intent.getIntExtra("secs", 0);
         }
     };
 
@@ -278,11 +272,6 @@ public class MainActivity extends AppCompatActivity {
         prhrMp.start();
     }
 
-    private void resetBackground() {
-        final View mainView = findViewById(R.id.activity_main);
-        mainView.setBackgroundColor(Color.parseColor("#ffffff"));
-    }
-
     /**
      * Set the times that events will occur
      * @param frequency  how many events will occur
@@ -313,4 +302,27 @@ public class MainActivity extends AppCompatActivity {
             unavailableNumbers.add(eventTime - 3 + j);
         }
     }
+
+    private void resetBackground() {
+        final View mainView = findViewById(R.id.activity_main);
+        mainView.setBackgroundColor(Color.parseColor("#ffffff"));
+    }
+
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        outState.putInt("gameTime", gameTime);
+//        outState.putLong("initialTime", initialTime);
+//        handler.removeCallbacks(updateTimer);
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        time = (TextView) findViewById(R.id.timer);
+//        gameTime = savedInstanceState.getInt("gameTime");
+//        initialTime = savedInstanceState.getLong("initialTime");
+//
+//        handler.postDelayed(updateTimer, 0);
+//    }
 }

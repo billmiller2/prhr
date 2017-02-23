@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
     String text = null;
 
-    int addedTime;
+    int addedTime = 0;
     int secs;
     int mins;
     int isWineHr = 0;
@@ -66,8 +66,6 @@ public class MainActivity extends AppCompatActivity {
         buttonStartPause.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                addedTime = 0;
-
                 if (startUp) {
                     time = (TextView) findViewById(R.id.timer);
                     buttonStartPause.setText("Pause"); // fake pause button
@@ -314,6 +312,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("gameTime", gameTime);
+        outState.putInt("mins", mins);
+        outState.putInt("secs", secs);
         handler.removeCallbacks(updateTimer);
     }
 
@@ -322,6 +322,8 @@ public class MainActivity extends AppCompatActivity {
         super.onRestoreInstanceState(savedInstanceState);
         time = (TextView) findViewById(R.id.timer);
         gameTime = savedInstanceState.getInt("gameTime");
+        mins = savedInstanceState.getInt("mins");
+        secs = savedInstanceState.getInt("secs");
 
         handler.postDelayed(updateTimer, 0);
     }

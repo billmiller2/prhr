@@ -46,7 +46,7 @@ public class TimerService extends Service {
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        addedTime += intent.getIntExtra("addedTime", 0);
+        addedTime = intent.getIntExtra("addedTime", 0);
 
         return START_STICKY;
     }

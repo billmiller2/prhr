@@ -54,12 +54,23 @@ public class MainActivity extends AppCompatActivity {
     public MediaPlayer finishMp;
     public MediaPlayer doubleMp;
 
+    /**
+     * Receive data from timer service
+     */
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            secs = intent.getIntExtra("secs", 0);
+            mins = intent.getIntExtra("mins", 0);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final Button buttonStartPause = (Button) findViewById(R.id.start);
-        final Button buttonSettings = (Button) findViewById(R.id.settings);
+        Button buttonStartPause = (Button) findViewById(R.id.start);
+        Button buttonSettings = (Button) findViewById(R.id.settings);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
 
@@ -67,9 +78,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (startUp) {
+                    setButtons(); // disable settings and set pause button
                     time = (TextView) findViewById(R.id.timer);
-                    buttonStartPause.setText("Pause"); // fake pause button
-                    buttonSettings.setEnabled(false); // get user game settings
                     SharedPreferences prefs = getSharedPreferences();
                     gameTime = getGameTime(prefs);
                     events = getEvents(prefs);
@@ -98,6 +108,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Update the main timer
+     */
     private Runnable updateTimer = new Runnable() {
         public void run() {
             if (!isEventTriggered) {
@@ -130,14 +143,6 @@ public class MainActivity extends AppCompatActivity {
             if (mins == gameTime) {
                 handler.removeCallbacks(updateTimer);
             }
-        }
-    };
-
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            secs = intent.getIntExtra("secs", 0);
-            mins = intent.getIntExtra("mins", 0);
         }
     };
 
@@ -273,6 +278,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Disable settings button and change start
+     * button to pause when game starts
+     */
+    private void setButtons() {
+        Button buttonStartPause = (Button) findViewById(R.id.start);
+        Button buttonSettings = (Button) findViewById(R.id.settings);
+
+        buttonStartPause.setText("Pause"); // fake pause button
+        buttonSettings.setEnabled(false); // get user game settings
+    }
+
+    /**
      * Set the times that events will occur
      * @param frequency  how many events will occur
      */
@@ -303,9 +320,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Reset the background flash
+     */
     private void resetBackground() {
         final View mainView = findViewById(R.id.activity_main);
         mainView.setBackgroundColor(Color.parseColor("#ffffff"));
+    }
+
+    @Override
+    protected void onPause() {
+        onSaveInstanceState(new Bundle());
+        super.onPause();
+
+        unregisterReceiver(receiver);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (!startUp) {
+            registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
+            handler.postDelayed(updateTimer, 0);
+        }
     }
 
     @Override
@@ -314,16 +352,23 @@ public class MainActivity extends AppCompatActivity {
         outState.putInt("gameTime", gameTime);
         outState.putInt("mins", mins);
         outState.putInt("secs", secs);
+        outState.putInt("addedTime", addedTime);
+        outState.putBoolean("startUp", startUp);
+
         handler.removeCallbacks(updateTimer);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+        setButtons(); // disable settings and set pause button
+
         time = (TextView) findViewById(R.id.timer);
         gameTime = savedInstanceState.getInt("gameTime");
         mins = savedInstanceState.getInt("mins");
         secs = savedInstanceState.getInt("secs");
+        addedTime = savedInstanceState.getInt("addedTime");
+        startUp = savedInstanceState.getBoolean("startUp");
 
         handler.postDelayed(updateTimer, 0);
     }

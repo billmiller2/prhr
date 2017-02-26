@@ -73,18 +73,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Button buttonStartPause = (Button) findViewById(R.id.start);
         Button buttonSettings = (Button) findViewById(R.id.settings);
+        time = (TextView) findViewById(R.id.timer);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
 
         if (serviceRunning) {
-            prepareGame();
+            startGame();
         }
 
         buttonStartPause.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (startUp) {
-                    prepareGame();
+                    startGame();
                     startUp = false;
                 } else if ((60 - secs) > 5) {
                     addedTime += 5; // penalize pausing
@@ -276,18 +277,6 @@ public class MainActivity extends AppCompatActivity {
         prhrMp.start();
     }
 
-    private void prepareGame() {
-        setButtons(); // disable settings and set pause button
-        time = (TextView) findViewById(R.id.timer);
-        SharedPreferences prefs = getSharedPreferences();
-        gameTime = getGameTime(prefs);
-        events = getEvents(prefs);
-        isWineHr = getWineHr(prefs);
-
-        calculateEvents(events, gameTime); //set random event times
-        handler.postDelayed(updateTimer, 0); // start runnable
-    }
-
     /**
      * Disable settings button and change start
      * button to pause when game starts
@@ -329,6 +318,17 @@ public class MainActivity extends AppCompatActivity {
         for (int j = 0; j < 5; j++) {
             unavailableNumbers.add(eventTime - 3 + j);
         }
+    }
+
+    private void startGame() {
+        setButtons(); // disable settings and set pause button
+        SharedPreferences prefs = getSharedPreferences();
+        gameTime = getGameTime(prefs);
+        events = getEvents(prefs);
+        isWineHr = getWineHr(prefs);
+
+        calculateEvents(events, gameTime); //set random event times
+        handler.postDelayed(updateTimer, 0); // start runnable
     }
 
     /**

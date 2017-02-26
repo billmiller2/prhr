@@ -1,6 +1,9 @@
 package com.sexcamelmusic.prhr;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
@@ -12,19 +15,30 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.os.SystemClock;
 
 import java.util.ArrayList;
 import java.util.Random;
 
+import static com.sexcamelmusic.prhr.TimerService.serviceRunning;
+
 public class MainActivity extends AppCompatActivity {
     TextView time;
     Handler handler = new Handler();
-    long initialTime;
-    int addedTime;
-    int isWineHr = 0;
-    boolean startUp = true;
+
+    String text = null;
+
+    int addedTime = 0;
     int secs;
+    int mins;
+    int isWineHr = 0;
+    int events;
+    int gameTime;
+    int event = 0;
+    int eventFrequency;
+
+    boolean startUp = true;
+    boolean isEventTriggered = false;
+    boolean isLiquorShotValid = true;
 
     final static int doubleShot = 0;
     final static int liquorShot = 1;
@@ -34,50 +48,52 @@ public class MainActivity extends AppCompatActivity {
     final static  String liquorShotText = "Liquor Shot";
     final static  String finishDrinkText = "Finish Drink";
 
-    boolean isEventTriggered = false;
-    boolean isLiquorShotValid = true;
-    String text = null;
-    int event = 0;
+    ArrayList<Integer> unavailableNumbers = new ArrayList<Integer>();
+    ArrayList<Integer>eventTimes = new ArrayList<Integer>();
 
-    int eventFrequency;
     public MediaPlayer liquorMp;
     public MediaPlayer prhrMp;
     public MediaPlayer finishMp;
     public MediaPlayer doubleMp;
-    int gameTime;
-    int events;
-    ArrayList<Integer> unavailableNumbers = new ArrayList<Integer>();
-    ArrayList<Integer>eventTimes = new ArrayList<Integer>();
+
+    /**
+     * Receive data from timer service
+     */
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            secs = intent.getIntExtra("secs", 0);
+            mins = intent.getIntExtra("mins", 0);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final Button buttonStartPause = (Button) findViewById(R.id.start);
-        final Button buttonSettings = (Button) findViewById(R.id.settings);
+        Button buttonStartPause = (Button) findViewById(R.id.start);
+        Button buttonSettings = (Button) findViewById(R.id.settings);
         time = (TextView) findViewById(R.id.timer);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
+
+        if (serviceRunning) {
+            startGame();
+        }
 
         buttonStartPause.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (startUp) {
-                    initialTime = SystemClock.uptimeMillis();
-                    buttonStartPause.setText("Pause");
-                    buttonSettings.setEnabled(false);
-
-                    SharedPreferences prefs = getSharedPreferences();
-                    gameTime = getGameTime(prefs);
-                    events = getEvents(prefs);
-                    isWineHr = getWineHr(prefs);
-                    calculateEvents(events, gameTime);
-
-                    handler.postDelayed(updateTimer, 0);
+                    startGame();
                     startUp = false;
                 } else if ((60 - secs) > 5) {
-                    addedTime += 5;
+                    addedTime += 5; // penalize pausing
                 }
 
+                Intent intent = new Intent(view.getContext(), TimerService.class);
+                intent.putExtra("addedTime", addedTime);
+                startService(intent); // start timer
             }
         });
 
@@ -90,20 +106,20 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Update the main timer
+     */
     private Runnable updateTimer = new Runnable() {
         public void run() {
-            long timeInMilliseconds = SystemClock.uptimeMillis() - initialTime;
-            secs = (int) (timeInMilliseconds / 1000) + addedTime;
-            int mins = secs / 60;
-            secs = secs % 60;
-
             if (!isEventTriggered) {
                 time.setText("" + mins + ":" + String.format("%02d", secs));
             }
 
             handler.postDelayed(this, 0);
 
-            if ((isWineHr == 1 && secs % 60 == 0 && mins % 2 != 0) || (isWineHr == 0 && secs % 60 == 0)) {
+            if ((isWineHr == 1 && secs % 60 == 0 && mins % 2 != 0) || (isWineHr == 0 && secs % 60 == 0)
+                    && mins != 0
+            ) {
                 if (eventTimes.contains(mins)) {
                     if (!isEventTriggered) {
                         event = getEvent();
@@ -261,9 +277,16 @@ public class MainActivity extends AppCompatActivity {
         prhrMp.start();
     }
 
-    private void resetBackground() {
-        final View mainView = findViewById(R.id.activity_main);
-        mainView.setBackgroundColor(Color.parseColor("#ffffff"));
+    /**
+     * Disable settings button and change start
+     * button to pause when game starts
+     */
+    private void setButtons() {
+        Button buttonStartPause = (Button) findViewById(R.id.start);
+        Button buttonSettings = (Button) findViewById(R.id.settings);
+
+        buttonStartPause.setText("Pause"); // fake pause button
+        buttonSettings.setEnabled(false); // get user game settings
     }
 
     /**
@@ -295,5 +318,65 @@ public class MainActivity extends AppCompatActivity {
         for (int j = 0; j < 5; j++) {
             unavailableNumbers.add(eventTime - 3 + j);
         }
+    }
+
+    private void startGame() {
+        setButtons(); // disable settings and set pause button
+        SharedPreferences prefs = getSharedPreferences();
+        gameTime = getGameTime(prefs);
+        events = getEvents(prefs);
+        isWineHr = getWineHr(prefs);
+
+        calculateEvents(events, gameTime); //set random event times
+        handler.postDelayed(updateTimer, 0); // start runnable
+    }
+
+    /**
+     * Reset the background flash
+     */
+    private void resetBackground() {
+        final View mainView = findViewById(R.id.activity_main);
+        mainView.setBackgroundColor(Color.parseColor("#ffffff"));
+    }
+
+    @Override
+    protected void onPause() {
+        onSaveInstanceState(new Bundle());
+        super.onPause();
+
+        unregisterReceiver(receiver);
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
+        handler.postDelayed(updateTimer, 0);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("gameTime", gameTime);
+        outState.putInt("mins", mins);
+        outState.putInt("secs", secs);
+        outState.putInt("addedTime", addedTime);
+        outState.putBoolean("startUp", startUp);
+
+        handler.removeCallbacks(updateTimer);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        setButtons(); // disable settings and set pause button
+
+        time = (TextView) findViewById(R.id.timer);
+        gameTime = savedInstanceState.getInt("gameTime");
+        mins = savedInstanceState.getInt("mins");
+        secs = savedInstanceState.getInt("secs");
+        addedTime = savedInstanceState.getInt("addedTime");
+        startUp = savedInstanceState.getBoolean("startUp");
+        handler.postDelayed(updateTimer, 0);
     }
 }

@@ -31,6 +31,8 @@ public class TimerService extends Service {
     public static final String TIMER_BR = "sexcamelmusic.timer_br";
     Intent timerIntent = new Intent(TIMER_BR);
 
+    public static Boolean serviceRunning = false;
+
     long initialTime;
     int secs;
     int addedTime;
@@ -47,6 +49,7 @@ public class TimerService extends Service {
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         addedTime = intent.getIntExtra("addedTime", 0);
+        serviceRunning = true;
 
         return START_STICKY;
     }

@@ -19,6 +19,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static com.sexcamelmusic.prhr.TimerService.serviceRunning;
+
 public class MainActivity extends AppCompatActivity {
     TextView time;
     Handler handler = new Handler();
@@ -74,20 +76,15 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
 
+        if (serviceRunning) {
+            prepareGame();
+        }
+
         buttonStartPause.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (startUp) {
-                    setButtons(); // disable settings and set pause button
-                    time = (TextView) findViewById(R.id.timer);
-                    SharedPreferences prefs = getSharedPreferences();
-                    gameTime = getGameTime(prefs);
-                    events = getEvents(prefs);
-                    isWineHr = getWineHr(prefs);
-
-                    calculateEvents(events, gameTime); //set random event times
-                    handler.postDelayed(updateTimer, 0); // start runnable
-
+                    prepareGame();
                     startUp = false;
                 } else if ((60 - secs) > 5) {
                     addedTime += 5; // penalize pausing
@@ -119,7 +116,9 @@ public class MainActivity extends AppCompatActivity {
 
             handler.postDelayed(this, 0);
 
-            if ((isWineHr == 1 && secs % 60 == 0 && mins % 2 != 0) || (isWineHr == 0 && secs % 60 == 0)) {
+            if ((isWineHr == 1 && secs % 60 == 0 && mins % 2 != 0) || (isWineHr == 0 && secs % 60 == 0)
+                    && mins != 0
+            ) {
                 if (eventTimes.contains(mins)) {
                     if (!isEventTriggered) {
                         event = getEvent();
@@ -277,6 +276,18 @@ public class MainActivity extends AppCompatActivity {
         prhrMp.start();
     }
 
+    private void prepareGame() {
+        setButtons(); // disable settings and set pause button
+        time = (TextView) findViewById(R.id.timer);
+        SharedPreferences prefs = getSharedPreferences();
+        gameTime = getGameTime(prefs);
+        events = getEvents(prefs);
+        isWineHr = getWineHr(prefs);
+
+        calculateEvents(events, gameTime); //set random event times
+        handler.postDelayed(updateTimer, 0); // start runnable
+    }
+
     /**
      * Disable settings button and change start
      * button to pause when game starts
@@ -337,13 +348,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (!startUp) {
-            registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
-            handler.postDelayed(updateTimer, 0);
-        }
+    protected void onRestart() {
+        super.onRestart();
+        registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
+        handler.postDelayed(updateTimer, 0);
     }
 
     @Override
@@ -369,7 +377,6 @@ public class MainActivity extends AppCompatActivity {
         secs = savedInstanceState.getInt("secs");
         addedTime = savedInstanceState.getInt("addedTime");
         startUp = savedInstanceState.getBoolean("startUp");
-
         handler.postDelayed(updateTimer, 0);
     }
 }

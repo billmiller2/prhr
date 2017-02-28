@@ -141,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (mins == gameTime) {
+                stopService(new Intent(getApplicationContext(), TimerService.class));
                 handler.removeCallbacks(updateTimer);
             }
         }
@@ -337,6 +338,12 @@ public class MainActivity extends AppCompatActivity {
     private void resetBackground() {
         final View mainView = findViewById(R.id.activity_main);
         mainView.setBackgroundColor(Color.parseColor("#ffffff"));
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopService(new Intent(this, TimerService.class));
+        super.onDestroy();
     }
 
     @Override

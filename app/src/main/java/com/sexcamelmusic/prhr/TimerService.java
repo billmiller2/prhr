@@ -47,6 +47,7 @@ public class TimerService extends Service {
         handler.postDelayed(getTime, 0);
     }
 
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         addedTime = intent.getIntExtra("addedTime", 0);
         serviceRunning = true;

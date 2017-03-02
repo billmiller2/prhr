@@ -17,6 +17,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static com.sexcamelmusic.prhr.R.id.add;
+import static com.sexcamelmusic.prhr.R.id.start;
 import static com.sexcamelmusic.prhr.R.id.text;
 
 /**
@@ -33,9 +35,9 @@ public class TimerService extends Service {
 
     public static Boolean serviceRunning = false;
 
-    long initialTime;
-    int secs;
-    int addedTime;
+    private static int addedTime;
+    private static int secs;
+    private static long initialTime;
 
     public IBinder onBind(Intent intent) {
         return null;
@@ -43,14 +45,19 @@ public class TimerService extends Service {
 
     @Override
     public void onCreate() {
-        initialTime = SystemClock.uptimeMillis();
-        handler.postDelayed(getTime, 0);
+        if (!serviceRunning) {
+            initialTime = SystemClock.uptimeMillis();
+            serviceRunning = true;
+            addedTime = 0;
+            handler.postDelayed(getTime, 0);
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        addedTime = intent.getIntExtra("addedTime", 0);
-        serviceRunning = true;
+        if ((60 - secs) > 5 && secs > 0) {
+            addedTime += 5;
+        }
 
         return START_STICKY;
     }

@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
 
     String text = null;
 
-    int addedTime = 0;
     int secs;
     int mins;
     int isWineHr = 0;
@@ -87,13 +86,9 @@ public class MainActivity extends AppCompatActivity {
                 if (startUp) {
                     startGame();
                     startUp = false;
-                } else if ((60 - secs) > 5) {
-                    addedTime += 5; // penalize pausing
                 }
 
-                Intent intent = new Intent(view.getContext(), TimerService.class);
-                intent.putExtra("addedTime", addedTime);
-                startService(intent); // start timer
+                startService(new Intent(view.getContext(), TimerService.class));
             }
         });
 
@@ -367,7 +362,6 @@ public class MainActivity extends AppCompatActivity {
         outState.putInt("gameTime", gameTime);
         outState.putInt("mins", mins);
         outState.putInt("secs", secs);
-        outState.putInt("addedTime", addedTime);
         outState.putBoolean("startUp", startUp);
 
         handler.removeCallbacks(updateTimer);
@@ -382,7 +376,6 @@ public class MainActivity extends AppCompatActivity {
         gameTime = savedInstanceState.getInt("gameTime");
         mins = savedInstanceState.getInt("mins");
         secs = savedInstanceState.getInt("secs");
-        addedTime = savedInstanceState.getInt("addedTime");
         startUp = savedInstanceState.getBoolean("startUp");
         handler.postDelayed(updateTimer, 0);
     }

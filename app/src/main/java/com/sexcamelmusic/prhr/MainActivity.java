@@ -29,14 +29,14 @@ public class MainActivity extends AppCompatActivity {
 
     int secs;
     int mins;
-    int isWineHr = 0;
     int events;
-    int gameTime;
     int event = 0;
     int eventFrequency;
+    static int gameTime;
+    static int isWineHr = 0;
 
-    boolean startUp = true;
     boolean isEventTriggered = false;
+    static boolean startUp = true;
     static boolean isLiquorShotValid = true;
 
     final static int doubleShot = 0;
@@ -77,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
 
         if (serviceRunning) {
-            startGame();
+            setButtons();
+            handler.postDelayed(updateTimer, 0);
         }
 
         buttonStartPause.setOnClickListener(new OnClickListener() {

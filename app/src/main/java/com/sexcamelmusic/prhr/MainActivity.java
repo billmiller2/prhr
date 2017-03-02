@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     boolean startUp = true;
     boolean isEventTriggered = false;
-    boolean isLiquorShotValid = true;
+    static boolean isLiquorShotValid = true;
 
     final static int doubleShot = 0;
     final static int liquorShot = 1;
@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
     final static  String liquorShotText = "Liquor Shot";
     final static  String finishDrinkText = "Finish Drink";
 
-    ArrayList<Integer> unavailableNumbers = new ArrayList<Integer>();
-    ArrayList<Integer>eventTimes = new ArrayList<Integer>();
+    static ArrayList<Integer> unavailableNumbers = new ArrayList<Integer>();
+    static ArrayList<Integer>eventTimes = new ArrayList<Integer>();
 
     public MediaPlayer liquorMp;
     public MediaPlayer prhrMp;

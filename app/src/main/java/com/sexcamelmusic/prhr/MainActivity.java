@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 isEventTriggered = false;
             }
 
-            if (mins >= 1) {
+            if (mins >= gameTime) {
                 stopService(new Intent(getApplicationContext(), TimerService.class));
                 handler.removeCallbacks(updateTimer);
             }

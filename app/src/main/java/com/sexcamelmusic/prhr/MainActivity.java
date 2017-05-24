@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     int eventFrequency;
     static int gameTime;
     static int isWineHr = 0;
+    static int isWildWest = 0;
 
     boolean isEventTriggered = false;
     static boolean startUp = true;

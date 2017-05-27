@@ -78,8 +78,11 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         registerReceiver(receiver, new IntentFilter(TimerService.TIMER_BR));
 
+        ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) time.getLayoutParams();
+        mlp.setMargins(0, 300, 0, 0);
+
         if (serviceRunning) {
-            setButtons();
+            configureGame();
             handler.postDelayed(updateTimer, 0);
         }
 
@@ -234,6 +237,13 @@ public class MainActivity extends AppCompatActivity {
         return isWine;
     }
 
+    private int getWildWest(SharedPreferences prefs) {
+        String isWildWildWest = prefs.getString("gameMode", "0");
+        int isWildWest = Integer.parseInt(isWildWildWest);
+
+        return isWildWest;
+    }
+
     private void playAudio(int event) {
         switch (event) {
             case doubleShot:
@@ -279,13 +289,24 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Disable settings button and change start
      * button to pause when game starts
+     *
+     * Set view if special game mode
      */
-    private void setButtons() {
+    private void configureGame() {
         Button buttonStartPause = (Button) findViewById(R.id.start);
         Button buttonSettings = (Button) findViewById(R.id.settings);
 
         buttonStartPause.setText("Pause"); // fake pause button
         buttonSettings.setEnabled(false); // get user game settings
+
+        SharedPreferences prefs = getSharedPreferences();
+        isWildWest = getWildWest(prefs);
+
+        if (isWildWest == 1) {
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) time.getLayoutParams();
+            mlp.setMargins(0, 100, 0, 0);
+            time.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.cowboy2, 0, 0);
+        }
     }
 
     /**
@@ -320,7 +341,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startGame() {
-        setButtons(); // disable settings and set pause button
+        configureGame(); // disable settings and set pause button
         SharedPreferences prefs = getSharedPreferences();
         gameTime = getGameTime(prefs);
         events = getEvents(prefs);
@@ -373,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        setButtons(); // disable settings and set pause button
+        configureGame(); // disable settings and set pause button
 
         time = (TextView) findViewById(R.id.timer);
         gameTime = savedInstanceState.getInt("gameTime");

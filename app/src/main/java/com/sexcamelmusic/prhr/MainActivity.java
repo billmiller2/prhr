@@ -1,7 +1,9 @@
 package com.sexcamelmusic.prhr;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -16,6 +18,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -56,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     public MediaPlayer prhrMp;
     public MediaPlayer finishMp;
     public MediaPlayer doubleMp;
+
+    long lastPressed = 0;
 
     /**
      * Receive data from timer service
@@ -294,10 +299,26 @@ public class MainActivity extends AppCompatActivity {
      */
     private void configureGame() {
         Button buttonStartPause = (Button) findViewById(R.id.start);
-        Button buttonSettings = (Button) findViewById(R.id.settings);
+        final Button buttonSettings = (Button) findViewById(R.id.settings);
 
         buttonStartPause.setText("Pause"); // fake pause button
-        buttonSettings.setEnabled(false); // get user game settings
+        buttonSettings.setText("Quit");
+
+        buttonSettings.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (lastPressed < System.currentTimeMillis() - 4000) {
+                    Toast toast = Toast.makeText(
+                        getBaseContext(), "Tap quit again to quit", Toast.LENGTH_SHORT
+                    );
+                    toast.show();
+                    lastPressed = System.currentTimeMillis();
+                } else {
+                    buttonSettings.setText("bruh");
+                }
+            }
+
+        });
 
         SharedPreferences prefs = getSharedPreferences();
         isWildWest = getWildWest(prefs);

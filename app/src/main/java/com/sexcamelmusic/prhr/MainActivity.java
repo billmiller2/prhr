@@ -1,9 +1,7 @@
 package com.sexcamelmusic.prhr;
 
-import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -13,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -147,6 +146,11 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (mins >= gameTime) {
+                stopService(new Intent(getApplicationContext(), TimerService.class));
+                handler.removeCallbacks(updateTimer);
+            }
+
+            if (lastPressed != 0 && lastPressed < System.currentTimeMillis()) {
                 stopService(new Intent(getApplicationContext(), TimerService.class));
                 handler.removeCallbacks(updateTimer);
             }
@@ -304,20 +308,25 @@ public class MainActivity extends AppCompatActivity {
         buttonStartPause.setText("Pause"); // fake pause button
         buttonSettings.setText("Quit");
 
-        buttonSettings.setOnClickListener(new OnClickListener() {
+        buttonSettings.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View view) {
-                if (lastPressed < System.currentTimeMillis() - 4000) {
-                    Toast toast = Toast.makeText(
-                        getBaseContext(), "Tap quit again to quit", Toast.LENGTH_SHORT
-                    );
-                    toast.show();
-                    lastPressed = System.currentTimeMillis();
-                } else {
-                    buttonSettings.setText("bruh");
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch(motionEvent.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        lastPressed = System.currentTimeMillis() + 3000;
+                        Toast holdToQuit = Toast.makeText(
+                                getBaseContext(),
+                                "Hold to quit",
+                                Toast.LENGTH_SHORT
+                        );
+                        holdToQuit.show();
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        lastPressed = 0;
+                        return true;
                 }
+                return false;
             }
-
         });
 
         SharedPreferences prefs = getSharedPreferences();

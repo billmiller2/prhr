@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 isEventTriggered = false;
             }
 
-            if (mins >= gameTime) {
+            if (mins >= gameTime && serviceRunning) {
                 time.setText("Free Win");
                 stopService(new Intent(getApplicationContext(), TimerService.class));
                 handler.removeCallbacks(updateTimer);

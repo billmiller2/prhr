@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void flashBackground() {
         final View mainView = findViewById(R.id.activity_main);
-        mainView.setBackgroundColor(Color.parseColor("#ffccff"));
+        mainView.setBackgroundColor(Color.parseColor("#ef7093"));
     }
 
     /**
@@ -357,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void resetBackground() {
         final View mainView = findViewById(R.id.activity_main);
-        mainView.setBackgroundColor(Color.parseColor("#ffffff"));
+        mainView.setBackgroundColor(Color.parseColor("#000000"));
     }
 
     @Override

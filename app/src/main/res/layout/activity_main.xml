@@ -9,6 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:keepScreenOn="true"
+    android:background="@color/black"
     tools:context="com.sexcamelmusic.prhr.MainActivity">
 
     <TextView
@@ -19,6 +20,7 @@
         android:textSize="80sp"
         android:layout_centerHorizontal="true"
         android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/white"
         android:text="@string/timer" />
 
     <Button
